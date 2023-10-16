@@ -54,11 +54,16 @@ public class TaskController {
   @PutMapping("/{taskId}")
   public ResponseEntity update(@RequestBody TaskModel taskModel, HttpServletRequest request, @PathVariable UUID taskId) {
 
+    var credentialUserId = (UUID) request.getAttribute("userId");
+
     var task = this.taskRepository.findById(taskId).orElse(null);
     // validar se a tarefa não existe
 
     if (task == null)
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body("A tarefa informada não existe.");
+    
+    if (!(task.getUserId().equals(credentialUserId)))
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Você não tem permissão para alterar esta tarefa.");
 
     // fazer as validações de dada para os dados da atualização
     Utils.copyNonNullProperties(taskModel, task);
